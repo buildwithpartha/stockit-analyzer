@@ -16,18 +16,17 @@ fi
 # Create streamlit-specific requirements.txt
 echo "📦 Creating optimized requirements for Streamlit Cloud..."
 cat > requirements.txt << EOF
-streamlit==1.46.1
-pandas==2.0.3
-yfinance==0.2.64
-plotly==5.22.0
-twilio==9.6.4
-python-dotenv==1.1.1
-requests==2.32.4
-numpy==1.24.4
-ta==0.13.0
-schedule==1.3.0
-pytz==2024.2
-certifi==2024.8.30
+streamlit
+pandas
+yfinance
+plotly
+twilio
+python-dotenv
+requests
+numpy
+ta
+schedule
+pytz
 EOF
 
 # Create .streamlit/config.toml for Streamlit Cloud
