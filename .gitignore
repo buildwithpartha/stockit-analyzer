@@ -1,0 +1,10 @@
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Local environment
+.env
+*.log
+__pycache__/
+*.pyc
+.DS_Store
