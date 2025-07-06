@@ -6,8 +6,12 @@ from datetime import datetime
 import time
 import os
 import logging
+from dotenv import load_dotenv
 from stock_analyzer import StockAnalyzer
 from sms_service import SMSService
+
+# Load environment variables first
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -405,6 +409,22 @@ def main():
         **WhatsApp:** {'Enabled' if sms_status['whatsapp_enabled'] else 'Disabled'}
         **Scheduler:** {'Running' if sms_status['scheduler_running'] else 'Stopped'}
         """)
+        
+        # Debug environment variables (show only if not properly set)
+        if st.checkbox("🔍 Debug Environment", help="Show environment variable status"):
+            twilio_sid = os.getenv('TWILIO_ACCOUNT_SID', 'Not Set')
+            twilio_token = os.getenv('TWILIO_AUTH_TOKEN', 'Not Set')
+            
+            st.text(f"Twilio SID: {twilio_sid[:10] + '...' if twilio_sid != 'Not Set' else 'Not Set'}")
+            st.text(f"Twilio Token: {'Set' if twilio_token != 'Not Set' else 'Not Set'}")
+            st.text(f"SMS Enabled: {os.getenv('SMS_ENABLED', 'Not Set')}")
+            st.text(f"WhatsApp Enabled: {os.getenv('USE_WHATSAPP', 'Not Set')}")
+            st.text(f"From Number: {os.getenv('TWILIO_FROM_NUMBER', 'Not Set')}")
+            st.text(f"To Number: {os.getenv('TWILIO_TO_NUMBER', 'Not Set')}")
+            
+            if twilio_sid == 'Not Set' or twilio_token == 'Not Set':
+                st.error("⚠️ Twilio credentials not loaded properly!")
+                st.info("Make sure your .env file is in the project root directory.")
     
     # Main content
     st.header("🔍 Stock Analysis")

@@ -55,15 +55,16 @@ class CustomTwilioHttpClient(TwilioHttpClient):
 
 class SMSService:
     def __init__(self):
-        self.account_sid = os.getenv('TWILIO_ACCOUNT_SID')
-        self.auth_token = os.getenv('TWILIO_AUTH_TOKEN')
-        self.from_number = os.getenv('TWILIO_FROM_NUMBER')
-        self.to_number = os.getenv('TWILIO_TO_NUMBER')
-        self.sms_enabled = os.getenv('SMS_ENABLED', 'false').lower() == 'true'
-        self.use_whatsapp = os.getenv('USE_WHATSAPP', 'false').lower() == 'true'
-        self.whatsapp_from = os.getenv('WHATSAPP_FROM_NUMBER', 'whatsapp:+14155238886')
-        self.alert_time = os.getenv('SMS_ALERT_TIME', '23:52')
-        self.timezone = os.getenv('SMS_ALERT_TIMEZONE', 'Asia/Kolkata')
+        # Try to get from Streamlit secrets first (for Streamlit Cloud), then environment variables
+        self.account_sid = self._get_config('TWILIO_ACCOUNT_SID')
+        self.auth_token = self._get_config('TWILIO_AUTH_TOKEN')
+        self.from_number = self._get_config('TWILIO_FROM_NUMBER')
+        self.to_number = self._get_config('TWILIO_TO_NUMBER')
+        self.sms_enabled = self._get_bool_config('SMS_ENABLED', False)
+        self.use_whatsapp = self._get_bool_config('USE_WHATSAPP', False)
+        self.whatsapp_from = self._get_config('WHATSAPP_FROM_NUMBER', 'whatsapp:+14155238886')
+        self.alert_time = self._get_config('SMS_ALERT_TIME', '08:00')
+        self.timezone = self._get_config('SMS_ALERT_TIMEZONE', 'Asia/Kolkata')
         
         # Initialize Twilio client with custom HTTP client
         if self.account_sid and self.auth_token:
@@ -80,6 +81,34 @@ class SMSService:
             
         self.scheduler_running = False
         self.scheduler_thread = None
+    
+    def _get_config(self, key, default=None):
+        """Get configuration from Streamlit secrets or environment variables"""
+        try:
+            # Try Streamlit secrets first (if running in Streamlit)
+            import streamlit as st
+            return st.secrets.get(key, os.getenv(key, default))
+        except:
+            # Fallback to environment variables
+            return os.getenv(key, default)
+    
+    def _get_bool_config(self, key, default=False):
+        """Get boolean configuration from Streamlit secrets or environment variables"""
+        try:
+            # Try Streamlit secrets first (if running in Streamlit)
+            import streamlit as st
+            value = st.secrets.get(key, os.getenv(key, str(default)))
+        except:
+            # Fallback to environment variables
+            value = os.getenv(key, str(default))
+        
+        # Handle different boolean representations
+        if isinstance(value, bool):
+            return value
+        elif isinstance(value, str):
+            return value.lower() in ('true', '1', 'yes', 'on', 'enabled')
+        else:
+            return bool(value)
     
     def send_whatsapp_message(self, message):
         """Send WhatsApp message with fallback to SMS if needed"""
